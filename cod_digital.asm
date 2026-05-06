@@ -92,7 +92,7 @@ ISR:
     BTFSC   STATUS, Z   ;Z=0 Tecla presionada, Z=1 Tecla liberada
     GOTO    LIBERAR_TECLA 
 
-    CALL    BARRIDO_TECLADO ;Z=1
+    CALL    BARRIDO_TECLADO ;Z=0
     GOTO    OVER_TIMER
 
 LIBERAR_TECLA:
