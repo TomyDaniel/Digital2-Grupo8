@@ -4,19 +4,17 @@ LIST p=16F887
 __CONFIG _CONFIG1, _FOSC_HS & _WDTE_OFF & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _CPD_OFF & _BOREN_ON & _LVP_OFF
 __CONFIG _CONFIG2, _BOR4V_BOR40V & _WRT_OFF
 
-;==============================================================================
-; VARIABLES
-;==============================================================================
+;Variables
 CBLOCK 0x70
     W_TEMP          
-    STATUS_TEMP     
+    STATUS_TEMP ;Guardado de contexto en interrupciones     
     INDEX           
-    NUM3            ; Display Izquierda (D4) - Primer número que entra
-    NUM2            
-    NUM1            
-    NUM0            ; Display Derecha (D1)
+    DIS_0           
+    DIS_1            
+    DIS_2           
+    DIS_3           
     TECLA_PRES      
-    ESTADO_TECLA    ; 0 = Libre, 1 = Presionada
+    ESTADO_TECLA ;0=Libre, 1=Presionada
 ENDC
 
     ORG 0x00
@@ -25,99 +23,101 @@ ENDC
     ORG 0x04
     GOTO ISR
 
-;==============================================================================
-; INICIO
-;==============================================================================
 INICIO:
     CLRF    INDEX
     CLRF    ESTADO_TECLA
-    MOVLW   0x10        ; 0x10 es "Apagado"
-    MOVWF   NUM0
-    MOVWF   NUM1
-    MOVWF   NUM2
-    MOVWF   NUM3
+    MOVLW   0x10 ;Displays apagados        
+    MOVWF   DIS_0
+    MOVWF   DIS_1
+    MOVWF   DIS_2
+    MOVWF   DIS_3
 
     BANKSEL ANSEL
     CLRF    ANSEL
-    CLRF    ANSELH
-
+    CLRF    ANSELH ;Salidas digitales
+    
+    ;Configuración de puertos
     BANKSEL TRISD
-    CLRF    TRISD       ; Segmentos
-    MOVLW   B'11110000' ; Teclado
+    CLRF    TRISD       ; Puerto D > Segmentos (Salida)
+    MOVLW   B'11110000' ; Puerto B > Teclado (Filas: RB7-RB4 Entrada, Columnas: RB3-RB0 Salida)
     MOVWF   TRISB
-    CLRF    TRISC       ; Comunes
+    CLRF    TRISC       ; Puerto C > Displays (Salida)
 
+    ;Configuración de registros de interrupción
     BANKSEL OPTION_REG
-    BCF     OPTION_REG, 7 
+    BCF     OPTION_REG, 7 ;Activo resistencias de pull-up
     MOVLW   B'00000100'   ; TMR0 prescaler 1:32
     MOVWF   OPTION_REG
 
     BANKSEL WPUB
-    MOVLW   B'11110000'
+    MOVLW   B'11110000' ;Activo pull-ups RB4-RB7 (entradas del teclado)
     MOVWF   WPUB
 
     BANKSEL IOCB
-    MOVLW   B'11110000'
+    MOVLW   B'11110000' ;Habilito interrupción por cambio en puerto B (RB4-RB7)
     MOVWF   IOCB
-
+    
     BANKSEL PORTB
-    CLRF    PORTB       
+    CLRF    PORTB       ;Inicializo columnas en 0
 
     BANKSEL INTCON
-    MOVLW   B'10101000' 
+    MOVLW   B'10101000' ;GIE=1, T0IE=1, RBIE=1
     MOVWF   INTCON
 
+    ;Recarga del TMR0
     BANKSEL TMR0
     MOVLW   D'100'
     MOVWF   TMR0
-
+    ;Incrementos del TMR0: (256-100=156)
+    ;Prescaller 1:32 > 100
+    ;T= 156*32us =5ms
+    ;T_total= 5ms*4 =20ms 
+    ;f= 1/20ms =50Hz
 LOOP:
     GOTO    LOOP
 
-;==============================================================================
-; ISR
-;==============================================================================
+;Rutina de interrupcion
 ISR:
+    ;Guardado de contexto (W/STATUS)
     MOVWF   W_TEMP
     SWAPF   STATUS, W
     MOVWF   STATUS_TEMP
 
-    BTFSS   INTCON, RBIF
-    GOTO    CHEQUEAR_TIMER
+    BTFSS   INTCON, RBIF ;RBIF (flag puerto B) = 1 > cambio en el teclado
+    GOTO    OVER_TIMER
 
     MOVF    PORTB, W    
-    BCF     INTCON, RBIF
+    BCF     INTCON, RBIF ;RBIF=0 (bajada de bandera manual)
 
     ANDLW   B'11110000'
     XORLW   B'11110000'
-    BTFSC   STATUS, Z   
+    BTFSC   STATUS, Z   ;Z=0 Tecla presionada, Z=1 Tecla liberada
     GOTO    LIBERAR_TECLA 
 
-    CALL    ESCANEO_TECLADO
-    GOTO    CHEQUEAR_TIMER
+    CALL    BARRIDO_TECLADO ;Z=1
+    GOTO    OVER_TIMER
 
 LIBERAR_TECLA:
     CLRF    ESTADO_TECLA 
-    GOTO    CHEQUEAR_TIMER
+    GOTO    OVER_TIMER
 
-CHEQUEAR_TIMER:
+OVER_TIMER:
     BTFSS   INTCON, TMR0IF
     GOTO    FIN_ISR
 
-    BCF     INTCON, TMR0IF
-    MOVLW   D'100'
+    BCF     INTCON, TMR0IF ;TMR0IF=0 (Bajo la bandera)
+    MOVLW   D'100' ;Recargo TMR0
     MOVWF   TMR0
 
-    CLRF PORTC
+    CLRF PORTC ;Apago displays
 
-    ; --- MULTIPLEXACIÓN CORREGIDA ---
-    ; Apuntamos a NUM3, NUM2, NUM1, NUM0 en orden
+    ;Multiplexado de 4 displays
     MOVLW   0x73        ; Dirección de NUM3 (0x73)
     ADDWF   INDEX, W
     MOVWF   FSR
     MOVF    INDF, W     
 
-    CALL    TABLA_DISPLAY
+    CALL    TABLA_DISPLAY_CC
     MOVWF   PORTD       
 
     MOVF    INDEX, W
@@ -129,7 +129,8 @@ CHEQUEAR_TIMER:
     XORWF   INDEX, W
     BTFSC   STATUS, Z
     CLRF    INDEX
-
+    
+;Recuperación de contexto
 FIN_ISR:
     SWAPF   STATUS_TEMP, W
     MOVWF   STATUS
@@ -137,10 +138,8 @@ FIN_ISR:
     SWAPF   W_TEMP, W
     RETFIE
 
-;==============================================================================
-; ESCANEO (Sin cambios en detección, solo en Guardar)
-;==============================================================================
-ESCANEO_TECLADO:
+
+BARRIDO_TECLADO:
     MOVF    ESTADO_TECLA, F
     BTFSS   STATUS, Z
     RETURN
@@ -231,30 +230,25 @@ ESCANEO_TECLADO:
 GUARDAR_TECLA:
     MOVWF   TECLA_PRES
     MOVLW   0x01
-    MOVWF   ESTADO_TECLA 
+    MOVWF   ESTADO_TECLA ;Anti rebote lógico
     
-    ; --- DESPLAZAMIENTO INVERTIDO (Hacia la derecha) ---
-    ; Lo que estaba en NUM1 pasa a NUM0
-    ; Lo que estaba en NUM2 pasa a NUM1
-    ; Lo que estaba en NUM3 pasa a NUM2
-    ; El nuevo valor entra en NUM3 (Izquierda)
+    ;Desplazamiento hacia la izquierda dis_0 > dis_1 > dis_2 > dis_3
     
-    MOVF    NUM1, W
-    MOVWF   NUM0
-    MOVF    NUM2, W
-    MOVWF   NUM1
-    MOVF    NUM3, W
-    MOVWF   NUM2
+    ; Corrimiento hacia la izquierda
+    MOVF    DIS_2, W
+    MOVWF   DIS_3
+    MOVF    DIS_1, W
+    MOVWF   DIS_2
+    MOVF    DIS_0, W
+    MOVWF   DIS_1
     MOVF    TECLA_PRES, W
-    MOVWF   NUM3
-
+    MOVWF   DIS_0
+    
     CLRF    PORTB 
     RETURN
 
-;==============================================================================
-; TABLAS
-;==============================================================================
-   TABLA_DISPLAY:
+;Tablas
+   TABLA_DISPLAY_CC:
     ADDWF   PCL, F
     RETLW   0x3F ; 0
     RETLW   0x06 ; 1
@@ -276,9 +270,9 @@ GUARDAR_TECLA:
 
 HABILITACION_DISPLAY:
     ADDWF   PCL, F
-    RETLW   B'00000001' ; RC0 (NUM0 - derecha)
+    RETLW   B'00000001' ; RC0 (DIS_0 - derecha)
     RETLW   B'00000010' ; RC1
     RETLW   B'00000100' ; RC2
-    RETLW   B'00001000' ; RC3 (NUM3 - izquierda)
+    RETLW   B'00001000' ; RC3 (DIS_3 - izquierda)
 
     END
