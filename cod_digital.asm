@@ -45,20 +45,20 @@ INICIO:
 
     ;Configuración de registros de interrupción
     BANKSEL OPTION_REG
-    BCF     OPTION_REG, 7 ;Activo resistencias de pull-up
+    BCF     OPTION_REG, 7 ;Resistencias de pull-up
     MOVLW   B'00000100'   ; TMR0 prescaler 1:32
     MOVWF   OPTION_REG
 
     BANKSEL WPUB
-    MOVLW   B'11110000' ;Activo pull-ups RB4-RB7 (entradas del teclado)
+    MOVLW   B'11110000' ; Pull-ups RB4-RB7 (entradas del teclado)
     MOVWF   WPUB
 
     BANKSEL IOCB
-    MOVLW   B'11110000' ;Habilito interrupción por cambio en puerto B (RB4-RB7)
+    MOVLW   B'11110000' ; Interrupción por cambio en puerto B (RB4-RB7)
     MOVWF   IOCB
     
     BANKSEL PORTB
-    CLRF    PORTB       ;Inicializo columnas en 0
+    CLRF    PORTB       
 
     BANKSEL INTCON
     MOVLW   B'10101000' ;GIE=1, T0IE=1, RBIE=1
@@ -68,8 +68,6 @@ INICIO:
     BANKSEL TMR0
     MOVLW   D'100'
     MOVWF   TMR0
-    ;Incrementos del TMR0: (256-100=156)
-    ;Prescaller 1:32 > 100
     ;T= 156*32us =5ms
     ;T_total= 5ms*4 =20ms 
     ;f= 1/20ms =50Hz
@@ -83,7 +81,7 @@ ISR:
     SWAPF   STATUS, W
     MOVWF   STATUS_TEMP
 
-    BTFSS   INTCON, RBIF ;RBIF (flag puerto B) = 1 > cambio en el teclado
+    BTFSS   INTCON, RBIF ;RBIF=1 > cambio en el teclado
     GOTO    OVER_TIMER
 
     MOVF    PORTB, W    
@@ -112,7 +110,7 @@ OVER_TIMER:
     CLRF PORTC ;Apago displays
 
     ;Multiplexado de 4 displays
-    MOVLW   0x73        ; Dirección de NUM3 (0x73)
+    MOVLW   0x73        ; Dirección de DIS_0 (0x73)
     ADDWF   INDEX, W
     MOVWF   FSR
     MOVF    INDF, W     
