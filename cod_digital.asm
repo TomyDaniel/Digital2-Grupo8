@@ -7,7 +7,7 @@ __CONFIG _CONFIG2, _BOR4V_BOR40V & _WRT_OFF
 ;Variables
 CBLOCK 0x70
     W_TEMP          
-    STATUS_TEMP ;Guardado de contexto en interrupciones     
+    STATUS_TEMP 
     INDEX           
     DIS_0           
     DIS_1            
