@@ -5,7 +5,7 @@ __CONFIG _CONFIG1, _FOSC_HS & _WDTE_OFF & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _CP
 __CONFIG _CONFIG2, _BOR4V_BOR40V & _WRT_OFF
 
 ;Variables
-CBLOCK 0x70
+CBLOCK 0x70 
     W_TEMP          
     STATUS_TEMP 
     INDEX           
