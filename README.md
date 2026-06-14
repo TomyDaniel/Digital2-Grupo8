@@ -11,12 +11,7 @@
 
 ---
 
-<<<<<<< HEAD
 ## 🚀 1. Descripción General del Proyecto
-=======
-Sistema de control de ascensor de 4 pisos implementado sobre un microcontrolador PIC 16F887.  Un sensor infrarrojo conectado al conversor analógico digital (ADC) actúa como mecanismo de de detección: si detecta presencia en el ascensor, el sistema habilita la recepción de comandos. El usuario podrá seleccionar el piso deseado desde una computadora utilizando comunicación serie UART.
-El movimiento de la cabina es simulado por un motor DC controlado por el PIC, mientras que 4 displays de 7 segmentos multiplexados indican el piso actual en todo momento. El estado del ascensor se señaliza mediante tres LEDs, y todos los eventos relevantes se reportan en tiempo real a través de comunicación UART hacia una PC.
->>>>>>> 9c3797855ac83b03057ad8b68e6d05ffb28d94b4
 
 Sistema embebido de control de temperatura para una pava eléctrica, implementado sobre un microcontrolador **PIC16F887**. El usuario fija un **umbral de temperatura (*setpoint*)** enviándolo por **UART** desde la PC (comando `U` + valor + ENTER, p. ej. `U70`). El sistema mide de forma continua la temperatura del agua con un **sensor analógico** (canal AN0) y, mediante un **optoacoplador**, comanda un **relé** que habilita la resistencia calefactora de la pava. El control es por **histéresis**: el relé enciende cuando la temperatura cae por debajo del umbral y se apaga al alcanzarlo, evitando conmutaciones constantes.
 
@@ -24,19 +19,8 @@ La información se presenta en **4 displays de 7 segmentos multiplexados** (dos 
 
 ### 🎯 Alcances del Proyecto (¿Qué hace y qué NO hace el sistema?)
 
-<<<<<<< HEAD
 * **El sistema SÍ es capaz de:** medir la temperatura en tiempo real mediante el ADC interno; recibir y fijar el umbral por comando UART (`Uxx`); controlar la resistencia a través de un relé comandado por optoacoplador, con lógica de histéresis; mostrar simultáneamente temperatura y setpoint en 4 displays de 7 segmentos; y reportar el estado (setpoint, temperatura y relé) por UART cada ~1 segundo.
 * **El sistema NO incluye (Fuera de alcance):** carga del umbral por teclado físico (se hace por puerto serie); control de temperatura por algoritmo PID (es on/off con histéresis); almacenamiento local de datos (data logging); conectividad inalámbrica; ni interfaz gráfica dedicada (el monitoreo se realiza por monitor serie).
-=======
-| Componente                  | Función en el sistema                                     |
-|-----------------------------|-----------------------------------------------------------|
-| PIC 16F887                  | Microcontrolador principal, gestiona toda la lógica       |
-| Motor DC                    | Actuador que simula el movimiento de la cabina            |
-| Sensor IR (MH-Sensor-Series)| Detección de personas en el ascensor. |
-| LEDs (rojo / amarillo / verde) | Señalización visual del estado del ascensor            |
-| 4× Display 7 segmentos      | Indicación del piso actual (multiplexados por software)   |
-| Módulo UART                 | Comunicación serie para envío de datos y monitoreo desde PC                |
->>>>>>> 9c3797855ac83b03057ad8b68e6d05ffb28d94b4
 
 ### ⏩ Posibles Etapas Siguientes (Líneas Futuras)
 
