@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+    <style>
+      .lbl   { font-size:15px; font-weight:600; fill:#0f172a; text-anchor:middle; }
+      .sub   { font-size:12px; fill:#334155; text-anchor:middle; }
+      .pin   { font-size:11px; fill:#475569; font-style:italic; text-anchor:middle; }
+      .wire  { stroke:#334155; stroke-width:2; fill:none; }
+      .title { font-size:21px; font-weight:700; fill:#0f172a; text-anchor:middle; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="980" height="560" fill="#ffffff"/>
+  <text x="490" y="34" class="title">Diagrama de Bloques: Control de Temperatura Pava Electrica</text>
+  <text x="490" y="54" class="sub">PIC16F887 . Electronica Digital II . Grupo 8</text>
+
+  <rect x="30" y="120" width="190" height="64" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="125" y="148" class="lbl">Sensor Temperatura</text>
+  <text x="125" y="168" class="sub">LM35 (analogico)</text>
+
+  <rect x="30" y="360" width="190" height="64" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="125" y="388" class="lbl">PC / Monitor Serie</text>
+  <text x="125" y="408" class="sub">carga setpoint . log</text>
+
+  <rect x="350" y="90" width="280" height="400" rx="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="490" y="116" class="title" style="font-size:18px">PIC16F887</text>
+  <text x="490" y="134" class="sub">Osc. interno 4 MHz</text>
+
+  <rect x="372" y="150" width="236" height="60" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="490" y="176" class="lbl">ADC</text>
+  <text x="490" y="196" class="sub">AN0 . Vref=Vdd . 8 bits</text>
+
+  <rect x="372" y="222" width="236" height="60" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="490" y="248" class="lbl">Logica de Control</text>
+  <text x="490" y="268" class="sub">comparacion + histeresis</text>
+
+  <rect x="372" y="294" width="236" height="60" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="490" y="320" class="lbl">Timer0 (ISR)</text>
+  <text x="490" y="340" class="sub">multiplexado + temporizacion TX</text>
+
+  <rect x="372" y="366" width="236" height="60" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="490" y="392" class="lbl">EUSART / UART</text>
+  <text x="490" y="412" class="sub">9600 baudios</text>
+
+  <rect x="760" y="92" width="190" height="56" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="855" y="116" class="lbl">Optoacoplador</text>
+  <text x="855" y="136" class="sub">aislamiento</text>
+
+  <rect x="760" y="166" width="190" height="56" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="855" y="190" class="lbl">Rele</text>
+  <text x="855" y="210" class="sub">activo en alto</text>
+
+  <rect x="760" y="240" width="190" height="56" rx="10" fill="#fecaca" stroke="#b91c1c" stroke-width="2"/>
+  <text x="855" y="264" class="lbl">Resistencia (Pava)</text>
+  <text x="855" y="284" class="sub">carga calefactora</text>
+
+  <rect x="760" y="360" width="190" height="84" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="855" y="386" class="lbl">4x Display 7 seg</text>
+  <text x="855" y="406" class="sub">RC0-RC1: Temperatura</text>
+  <text x="855" y="424" class="sub">RC2-RC3: Setpoint</text>
+
+  <path class="wire" d="M220,152 H350" marker-end="url(#arrow)"/>
+  <text x="285" y="143" class="pin">AN0 / RA0</text>
+
+  <path class="wire" d="M220,384 H350" marker-end="url(#arrow)"/>
+  <text x="285" y="375" class="pin">RX: Uxx (RC7)</text>
+  <path class="wire" d="M350,406 H220" marker-end="url(#arrow)"/>
+  <text x="285" y="425" class="pin">TX: S=..;T=..;R=.. (RC6)</text>
+
+  <path class="wire" d="M608,252 H690 V120 H760" marker-end="url(#arrow)"/>
+  <text x="700" y="190" class="pin">RB0</text>
+
+  <path class="wire" d="M855,148 V166" marker-end="url(#arrow)"/>
+  <path class="wire" d="M855,222 V240" marker-end="url(#arrow)"/>
+
+  <path class="wire" d="M608,324 H700 V402 H760" marker-end="url(#arrow)"/>
+  <text x="700" y="352" class="pin">PORTD + RC0-RC3</text>
+
+  <path class="wire" d="M490,210 V222" marker-end="url(#arrow)"/>
+</svg>
