@@ -24,7 +24,6 @@ La información se presenta en **4 displays de 7 segmentos multiplexados** (dos 
 
 ### ⏩ Posibles Etapas Siguientes (Líneas Futuras)
 
-<<<<<<< HEAD
 * Agregar un teclado matricial para configurar el setpoint de forma local, sin depender de la PC.
 * Implementar un control PID para mantener la temperatura estable en lugar del control on/off por histéresis.
 * Migrar el circuito de protoboard a un PCB con aislamiento reforzado entre la etapa de potencia (relé / red de 220 V) y la etapa de control de baja tensión.
@@ -128,13 +127,4 @@ El repositorio debe mantener la siguiente estructura limpia (recuerden configura
 └── README.md          # Este archivo de presentación
 ```
 
-> **Nota:** actualmente el firmware del proyecto se encuentra en `TP Final/Pava.asm`, y en `TP's Clases/` están los ejercicios de cursado. Se recomienda reubicar `Pava.asm` en `firmware/src/` para cumplir con la estructura anterior.
-=======
-1. El sensor infrarrojo detecta movimiento dentro de la cabina.
-2. El usuario ingresa el piso de destino mediante comunicación serie UART desde el teclado de la computadora.
-3. El sistema enciende el LED amarillo e inicia el motor en la dirección correspondiente.
-5. Al alcanzar el piso solicitado, el motor se detiene y el LED verde confirma la llegada.
-6. Cuando no hay solicitudes activas, el LED rojo indica que el sistema está en reposo.
-7. El piso actual se refleja en todo momento en los displays de 7 segmentos.
-8. Cada cambio de estado se transmite por UART para registro y monitoreo externo.
->>>>>>> 9c3797855ac83b03057ad8b68e6d05ffb28d94b4
+> **Nota:** el firmware del proyecto se encuentra en `firmware/src/Pava.asm`. En `TP's Clases/` están los ejercicios de cursado.
