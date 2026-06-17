@@ -104,8 +104,9 @@ La información se presenta en **4 displays de 7 segmentos multiplexados** y, en
 ## 📊 5. Ensayos, Pruebas y Resultados
 
 * **Evidencia Fotográfica y Gráficos:**
-  * *Foto del Prototipo Real:* 
-
+![Prototipo](<docs/img/Prototipo en protoboard .jpeg>)
+![Setup](docs/img/Setup.jpeg)
+  ![Interfaz gráfica](<docs/img/Interfaz gráfica.jpeg>)
 ---
 
 ## 📂 6. Estructura del Repositorio
