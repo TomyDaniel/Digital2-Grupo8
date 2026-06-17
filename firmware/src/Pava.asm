@@ -1,23 +1,17 @@
-       LIST    P=16F887
+LIST    P=16F887
         #include <p16f887.inc>
         ERRORLEVEL -302
 
-; ============================================================
 ; CONFIGURACION
-; ============================================================
 
         __CONFIG _CONFIG1, _INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_ON & _MCLRE_ON & _CP_OFF & _CPD_OFF & _BOREN_ON & _IESO_OFF & _FCMEN_OFF & _LVP_OFF
         __CONFIG _CONFIG2, _BOR40V & _WRT_OFF
 
-; ============================================================
 ; CONSTANTES
-; ============================================================
 
 TMR0_PRELOAD    EQU     d'225'      ; aprox 1 ms con Fosc=4MHz y prescaler 1:32
 
-; ============================================================
 ; VARIABLES
-; ============================================================
 
         CBLOCK  0x20
             ADC8
@@ -61,25 +55,18 @@ TMR0_PRELOAD    EQU     d'225'      ; aprox 1 ms con Fosc=4MHz y prescaler 1:32
             PCLATH_TEMP
         ENDC
 
-; ============================================================
-; VECTOR RESET
-; ============================================================
+	; VECTOR RESET
 
         ORG     0x0000
         GOTO    INIT
 
-; ============================================================
 ; VECTOR INTERRUPCION
-; ============================================================
 
         ORG     0x0004
         GOTO    ISR
 
-; ============================================================
 ; TABLA 7 SEGMENTOS
 ; Catodo comun:
-; RD0=a, RD1=b, RD2=c, RD3=d, RD4=e, RD5=f, RD6=g
-; ============================================================
 
         ORG     0x0008
 
@@ -96,16 +83,10 @@ SEG_TABLE:
         RETLW   b'01111111'     ; 8
         RETLW   b'01101111'     ; 9
 
-; ============================================================
 ; INTERRUPCION TMR0
 ; Multiplexa los 4 displays
-;
-; Orden fisico pedido:
-; RC0 - RC1 - RC2 - RC3
-;
 ; RC0 y RC1 -> temperatura sensada
 ; RC2 y RC3 -> setpoint
-; ============================================================
 
         ORG     0x0020
 
@@ -114,7 +95,7 @@ ISR:
         MOVWF   W_TEMP
         SWAPF   STATUS, W
         MOVWF   STATUS_TEMP
-        MOVF    PCLATH, W
+	MOVF    PCLATH, W
         MOVWF   PCLATH_TEMP
 
         BANKSEL INTCON
@@ -127,12 +108,6 @@ ISR:
         MOVLW   TMR0_PRELOAD
         MOVWF   TMR0
 
-; ------------------------------------------------------------
-; Apagar todos los displays antes de cambiar segmentos
-; Asumo transistores activos en alto:
-; RCx = 1 prende display
-; RCx = 0 apaga display
-; ------------------------------------------------------------
 
         BANKSEL PORTC
         BCF     PORTC, 0
@@ -140,14 +115,7 @@ ISR:
         BCF     PORTC, 2
         BCF     PORTC, 3
 
-; ------------------------------------------------------------
-; MUX_IDX:
-; 0 -> temperatura decenas/unidades corregido en UPDATE_DISPLAY
-; 1 -> temperatura decenas/unidades corregido en UPDATE_DISPLAY
-; 2 -> setpoint decenas/unidades corregido en UPDATE_DISPLAY
-; 3 -> setpoint decenas/unidades corregido en UPDATE_DISPLAY
-; ------------------------------------------------------------
-
+;Multiplexado
         BANKSEL MUX_IDX
         MOVF    MUX_IDX, W
         BTFSC   STATUS, Z
@@ -213,11 +181,9 @@ ISR_NEXT:
         BTFSC   STATUS, C
         CLRF    MUX_IDX
 
-; ------------------------------------------------------------
 ; Envio UART cada aprox 1 segundo
 ; TX_COUNT cuenta 250 ms
 ; TX_DIV cuenta 4 veces 250 ms = 1 segundo
-; ------------------------------------------------------------
 
         BANKSEL TX_COUNT
         INCF    TX_COUNT, F
@@ -244,7 +210,7 @@ ISR_RESTORE:
         MOVF    PCLATH_TEMP, W
         MOVWF   PCLATH
 
-        SWAPF   STATUS_TEMP, W
+	SWAPF   STATUS_TEMP, W
         MOVWF   STATUS
 
         SWAPF   W_TEMP, F
@@ -252,24 +218,18 @@ ISR_RESTORE:
 
         RETFIE
 
-; ============================================================
 ; PROGRAMA PRINCIPAL
-; ============================================================
 
         ORG     0x0100
 
 INIT:
-; ------------------------------------------------------------
 ; Oscilador interno 4 MHz
-; ------------------------------------------------------------
 
         BANKSEL OSCCON
         MOVLW   b'01100001'
         MOVWF   OSCCON
 
-; ------------------------------------------------------------
 ; AN0 analogico, resto digital
-; ------------------------------------------------------------
 
         BANKSEL ANSEL
         MOVLW   b'00000001'        ; AN0 analogico
@@ -277,10 +237,7 @@ INIT:
 
         CLRF    ANSELH             ; PORTB digital
 
-; ------------------------------------------------------------
 ; Puertos
-; ------------------------------------------------------------
-
         ; RA0 entrada LM35
         BANKSEL TRISA
         BSF     TRISA, 0
@@ -301,9 +258,7 @@ INIT:
         MOVLW   b'10000000'
         MOVWF   TRISC
 
-; ------------------------------------------------------------
 ; Limpiar puertos
-; ------------------------------------------------------------
 
         BANKSEL PORTB
         CLRF    PORTB              ; relay apagado
@@ -314,11 +269,8 @@ INIT:
         BANKSEL PORTD
         CLRF    PORTD              ; segmentos apagados
 
-; ------------------------------------------------------------
 ; ADC
 ; AN0, Vref=Vdd, justificacion izquierda
-; ------------------------------------------------------------
-
         BANKSEL ADCON1
         CLRF    ADCON1
 
@@ -326,10 +278,8 @@ INIT:
         MOVLW   b'01000001'        ; Fosc/8, canal AN0, ADC ON
         MOVWF   ADCON0
 
-; ------------------------------------------------------------
 ; UART 9600 baudios, Fosc=4MHz
 ; RC6 TX, RC7 RX
-; ------------------------------------------------------------
 
         BANKSEL SPBRG
         MOVLW   d'25'
@@ -343,9 +293,7 @@ INIT:
         MOVLW   b'10010000'        ; SPEN=1, CREN=1
         MOVWF   RCSTA
 
-; ------------------------------------------------------------
 ; Variables iniciales
-; ------------------------------------------------------------
 
         BANKSEL SETPOINT
         CLRF    SETPOINT           ; arranca sin setpoint
@@ -369,9 +317,7 @@ INIT:
         CLRF    DISP_T_D
         CLRF    DISP_T_U
 
-; ------------------------------------------------------------
 ; Timer0
-; ------------------------------------------------------------
 
         BANKSEL OPTION_REG
         MOVLW   b'00000011'        ; T0CS=0, PSA=0, PS=100 -> 1:32
@@ -387,9 +333,7 @@ INIT:
 
         CALL    TX_INICIO
 
-; ============================================================
 ; LOOP PRINCIPAL
-; ============================================================
 
 MAIN:
         CALL    RECIBIR_UART_ALL
@@ -407,11 +351,8 @@ MAIN:
 
         GOTO    MAIN
 
-; ============================================================
 ; LEER ADC
 ; Guarda ADRESH en ADC8
-; ============================================================
-
 LEER_ADC:
         CALL    DELAY_ADC
 
@@ -430,14 +371,10 @@ WAIT_ADC:
 
         RETURN
 
-; ============================================================
 ; CALC_TEMP
 ;
 ; Ajuste simple:
 ; TEMP_C = ADC8*2 - ADC8/10
-;
-; Aproxima ADC8*1,9
-; ============================================================
 
 CALC_TEMP:
         BANKSEL ADC8
@@ -473,19 +410,12 @@ DIV10_DONE:
 
         RETURN
 
-; ============================================================
-; UPDATE_DISPLAY
-;
 ; Displays:
 ; RC0 y RC1 -> temperatura sensada
 ; RC2 y RC3 -> setpoint
-; ============================================================
 
 UPDATE_DISPLAY:
-; ------------------------------------------------------------
 ; TEMP_C -> displays RC0 y RC1
-; Se carga invertido para que visualmente quede correcto.
-; ------------------------------------------------------------
 
         BANKSEL TEMP_C
         MOVF    TEMP_C, W
@@ -508,19 +438,14 @@ UPDATE_DISPLAY:
         BANKSEL DISP_T_U
         MOVWF   DISP_T_U
 
-; ------------------------------------------------------------
 ; Si todavía no llegó setpoint, apagar displays RC2 y RC3
-; ------------------------------------------------------------
 
         BANKSEL HAS_SETPOINT
         MOVF    HAS_SETPOINT, F
         BTFSC   STATUS, Z
         GOTO    UD_SETPOINT_APAGADO
 
-; ------------------------------------------------------------
 ; SETPOINT -> displays RC2 y RC3
-; Se carga invertido para que visualmente quede correcto.
-; ------------------------------------------------------------
 
         BANKSEL SETPOINT
         MOVF    SETPOINT, W
@@ -551,12 +476,9 @@ UD_SETPOINT_APAGADO:
         CLRF    DISP_SP_U
 
         RETURN
-
-; ============================================================
 ; LIMIT_99
 ; Entrada W = numero
 ; Salida W = numero limitado a 99
-; ============================================================
 
 LIMIT_99:
         BANKSEL VALUE
@@ -574,14 +496,9 @@ LIMIT_IS_99:
         MOVLW   d'99'
         RETURN
 
-; ============================================================
 ; NUM_TO_2DIG
 ; Entrada W = 0..99
 ; Salida:
-; TENS = decenas
-; UNITS = unidades
-; ============================================================
-
 NUM_TO_2DIG:
         BANKSEL VALUE
         MOVWF   VALUE
@@ -603,7 +520,6 @@ N2D_DONE:
         MOVWF   UNITS
         RETURN
 
-; ============================================================
 ; CONTROL RELAY CON HISTERESIS
 ;
 ; Si no hay setpoint recibido:
@@ -616,7 +532,6 @@ N2D_DONE:
 ;   relay ON
 ;
 ; Relay en RB0, activo en alto.
-; ============================================================
 
 CONTROL_RELAY:
         BANKSEL HAS_SETPOINT
@@ -632,7 +547,7 @@ CONTROL_RELAY:
         BTFSC   STATUS, C
         GOTO    RELAY_OFF
 
-        ; AUX1 = SETPOINT - 2
+        ; AUX1 = SETPOINT - 5
         MOVF    SETPOINT, W
         MOVWF   AUX1
 
@@ -664,13 +579,7 @@ RELAY_OFF:
         CLRF    RELAY_STATE
         RETURN
 
-; ============================================================
 ; RECIBIR UART
-;
-; Formato esperado:
-; U70 + ENTER
-; U85 + ENTER
-; ============================================================
 
 RECIBIR_UART_ALL:
         CALL    RECIBIR_UART
@@ -767,10 +676,7 @@ RX_END:
 
         CLRF    RX_FLAG
         RETURN
-
-; ============================================================
 ; SET_TMP = SET_TMP * 10 + DIGITO
-; ============================================================
 
 MULT10_ADD_DIGIT:
         BANKSEL SET_TMP
@@ -802,12 +708,9 @@ MULT10_ADD_DIGIT:
         MOVWF   SET_TMP
 
         RETURN
-
-; ============================================================
 ; ENVIAR ESTADO POR UART
 ; Formato:
 ; S=70;T=25;R=1
-; ============================================================
 
 ENVIAR_ESTADO:
         MOVLW   'S'
@@ -866,9 +769,7 @@ TX_INICIO:
         CALL    TX_CHAR
         RETURN
 
-; ============================================================
 ; TX_CHAR
-; ============================================================
 
 TX_CHAR:
         BANKSEL TXTEMP
@@ -887,12 +788,10 @@ WAIT_TX:
 
         RETURN
 
-; ============================================================
 ; TX_DEC2
 ; Envia numero 0..99 como dos digitos
 ; 7  -> 07
 ; 70 -> 70
-; ============================================================
 
 TX_DEC2:
         CALL    LIMIT_99
@@ -910,9 +809,7 @@ TX_DEC2:
 
         RETURN
 
-; ============================================================
 ; DELAY ADC
-; ============================================================
 
 DELAY_ADC:
         BANKSEL D1
@@ -926,4 +823,3 @@ DADC_LOOP:
         RETURN
 
         END
-
