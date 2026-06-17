@@ -1,5 +1,5 @@
 
-# Interfaz grafica SIN PYTHON para TP PIC16F887
+# Interfaz grafica TP PIC16F887
 # Protocolo:
 #   PC  -> PIC: U70 + salto de linea
 #   PIC -> PC:  S=70;T=25;R=1
